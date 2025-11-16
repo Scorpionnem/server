@@ -6,11 +6,14 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:16 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/16 15:55:43 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/16 17:18:37 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include <iostream>
+#include <cstdlib>
+#include <sys/signal.h>
 
 int	g_sig = 0;
 
@@ -24,8 +27,28 @@ int	main(void)
 	signal(SIGINT, handleSig);
 
 	Server	server;
-	server.open(4242);
-	while (g_sig == 0)
-		server.update();
-	server.close();
+	server.setConnectCallback([]
+		(const Client &client)
+		{
+			std::cout << "Connect callback for client: " << client.id() << std::endl;
+		});
+	server.setDisconnectCallback([]
+		(const Client &client)
+		{
+			std::cout << "Disconnect callback for client: " << client.id() << std::endl;
+		});
+	server.setMessageCallback([]
+		(const Client &client, const std::string &msg)
+		{
+			std::cout << "Message callback for client: " << client.id() << " : " << msg << std::flush;
+		});
+
+	try {
+		server.open(4242);
+		while (g_sig == 0)
+			server.update();
+		server.close();
+	} catch (const std::exception &e) {
+		std::cerr << e.what() << std::endl;
+	}
 }

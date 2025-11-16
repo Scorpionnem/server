@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 15:41:25 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/16 15:42:42 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/16 17:18:08 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,8 @@ class	Client
 		}
 		~Client() {}
 
-		uint	id() {return (_id);}
-		uint	fd() {return (_fd);}
-
+		uint	id() const {return (_id);}
+		uint	fd() const {return (_fd);}
 	private:
 		uint		_id;
 		uint		_fd;

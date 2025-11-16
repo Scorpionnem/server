@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:22 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/16 15:55:20 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/16 17:09:34 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,8 @@
 
 void	Server::_processInput(Client &client, const std::string &msg)
 {
-	_sendAll(client, "(" + std::to_string(client.id()) + ") msg: " + msg);
-	std::cout << "(" << client.id() << ") msg: " << msg << std::flush;
+	if (_onMessage)
+		_onMessage(client, msg);
 }
 
 void	Server::update()
@@ -53,8 +53,8 @@ void Server::_recvClients()
 				size = recv(client.fd(), buffer, sizeof(buffer), 0);
 				if (size == 0 || size == -1)
 				{
-					_sendAll(client, "(" + std::to_string(client.id()) + ") left\n");
-					std::cout << "(" << client.id() << ") left" << std::endl;
+					if (_onDisconnect)
+						_onDisconnect(client);
 					it = _clients.erase(it);
 					goto skip_it;
 				}
@@ -94,8 +94,8 @@ void	Server::_addNewClient()
 	Client	client(_curClientID++, clientFD);
 	_clients.insert({clientFD, client});
 
-	_sendAll(client, "(" + std::to_string(client.id()) + ") joined\n");
-	std::cout << "(" << client.id() << ") joined" << std::endl;
+	if (_onConnect)
+		_onConnect(client);
 }
 
 void	Server::_refreshPoll()
@@ -139,15 +139,12 @@ void	Server::open(int port)
 		::close(_socketFD);
 		throw std::runtime_error(strerror(errno));
 	}
-	std::cout << "Server opened" << std::endl;
 }
 
 void	Server::close()
 {
-	_sendAll("Closing server\n");
 	for (auto pair : _clients)
 		::close(pair.first);
 	if (_socketFD != -1)
 		::close(_socketFD);
-	std::cout << "Server closed" << std::endl;
 }
