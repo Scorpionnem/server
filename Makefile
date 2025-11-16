@@ -1,16 +1,15 @@
-CXX = c++
-CXXFLAGS = -Wall -Wextra -Werror -MMD -MP -g -std=c++17
+CC = c++
+CFLAGS = -Wall -Wextra -Werror -MMD -MP -g -std=c++17
 
 INCLUDES = -I includes
 
 NAME = server
 
-SRCS =	src/main.cpp\
-		src/Server.cpp
+SRCS =	src/main.c
 
 OBJDIR = obj
-OBJS = $(SRCS:%.cpp=$(OBJDIR)/%.o)
-DEPS = $(SRCS:%.cpp=$(OBJDIR)/%.d)
+OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
+DEPS = $(SRCS:%.c=$(OBJDIR)/%.d)
 
 all: $(NAME)
 
@@ -18,12 +17,12 @@ re: fclean all
 
 $(NAME): $(OBJS)
 	@echo Compiling $(NAME)
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -o $@ $^
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
 
-$(OBJDIR)/%.o: %.cpp
+$(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)
 	@echo Compiling $<
-	@$(CXX) $(CXXFLAGS) $(INCLUDES) -c $< -o $@
+	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
 
 clean:
 	@echo Cleaning objects
