@@ -1,11 +1,12 @@
-CC = c++
-CFLAGS = -Wall -Wextra -Werror -MMD -MP -g -std=c++17
+CC = cc
+CFLAGS = -Wall -Wextra -Werror -MMD -MP -g
 
 INCLUDES = -I includes
 
 NAME = server
 
-SRCS =	src/main.c
+SRCS =	src/main.c\
+		src/server.c
 
 OBJDIR = obj
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)

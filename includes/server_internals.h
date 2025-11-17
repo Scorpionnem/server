@@ -1,33 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   server_internals.h                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/11/16 18:15:16 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/17 11:07:21 by mbatty           ###   ########.fr       */
+/*   Created: 2025/11/17 11:25:11 by mbatty            #+#    #+#             */
+/*   Updated: 2025/11/17 11:25:36 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "server.h"
-#include "sys/signal.h"
+#ifndef SERVER_INTERNALS_H
+# define SERVER_INTERNALS_H
 
-int	g_sig = 0;
+# include "server.h"
 
-void	handle_sig(int sig)
-{
-	g_sig = sig;
-}
+int	server_refresh_poll(t_server *server);
+int	server_new_client(t_server *server);
+int	server_read_clients(t_server *server);
 
-int	main(void)
-{
-	t_server	server;
+int	server_remove_client(t_server *server, int fd);
+int	server_add_client(t_server *server, int fd);
 
-	signal(SIGINT, handle_sig);
-	server_open(&server, 7002);
-	while (g_sig == 0)
-		server_update(&server);
-	server_close(&server);
-	return (0);
-}
+char	*server_strdup(const char *s);
+char	*server_strjoin(char *s1, char *s2);
+
+#endif
