@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 11:20:35 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/17 11:25:45 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/17 17:50:06 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,41 @@ int	server_close(t_server *server)
 	return (1);
 }
 
+void	server_set_message_hook(t_server *server, void (*func)(t_client *client, char *msg, void *arg), void *arg)
+{
+	server->message_hook = func;
+	server->message_hook_arg = arg;
+}
+
+void	server_set_disconnect_hook(t_server *server, void (*func)(t_client *client, void *arg), void *arg)
+{
+	server->disconnect_hook = func;
+	server->disconnect_hook_arg = arg;
+}
+
+void	server_set_connect_hook(t_server *server, void (*func)(t_client *client, void *arg), void *arg)
+{
+	server->connect_hook = func;
+	server->connect_hook_arg = arg;
+}
+
+int	server_send_to_fd(int fd, const char *msg)
+{
+	send(fd, msg, strlen(msg), 0);
+	return (1);
+}
+
+int	server_send_to_id(t_server *server, int id, const char *msg)
+{
+	for (int c = 0; c < MAX_CLIENTS; c++)
+		if (server->clients[c].id == id)
+		{
+			send(server->clients[c].fd, msg, strlen(msg), 0);
+			break ;
+		}
+	return (1);
+}
+
 int	server_remove_client(t_server *server, int fd)
 {
 	for (int i = 0; i < MAX_CLIENTS; i++)
@@ -87,10 +122,10 @@ int	server_add_client(t_server *server, int fd)
 			server->clients[i].fd = fd;
 			if (fd != 0)
 				server->clients[i].id = server->current_client_id++;
-			return (1);
+			return (i);
 		}
 	}
-	return (0);
+	return (-1);
 }
 
 int	server_refresh_poll(t_server *server)
@@ -121,7 +156,7 @@ int	server_new_client(t_server *server)
 	if (fd == -1)
 		return (0);
 
-	if (!server_add_client(server, 0))
+	if (server_add_client(server, 0) == -1)
 	{
 		printf("Too many clients\n");
 		close(fd);
@@ -129,10 +164,10 @@ int	server_new_client(t_server *server)
 	}
 
 	inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
-	server_add_client(server, fd);
+	int client = server_add_client(server, fd);
 
-	printf("New client %d\n", fd);
-
+	if (server->connect_hook)
+		server->connect_hook(&server->clients[client], server->connect_hook_arg);
 	return (1);
 }
 
@@ -152,7 +187,8 @@ int	server_read_clients(t_server *server)
 				size = recv(server->clients[c].fd, buffer, sizeof(buffer), 0);
 				if (size == 0 || size == -1)
 				{
-					printf("Removed client\n");
+					if (server->disconnect_hook)
+						server->disconnect_hook(&server->clients[c], server->disconnect_hook_arg);
 					server_remove_client(server, server->clients[c].fd);
 					goto skip_it;
 				}
@@ -161,7 +197,8 @@ int	server_read_clients(t_server *server)
 				if (size < (ssize_t)sizeof(buffer))
 					break ;
 			}
-			printf("msg: %s\n", msg);
+			if (server->message_hook)
+				server->message_hook(&server->clients[c], msg, server->message_hook_arg);
 			free(msg);
 		}
 		
@@ -170,39 +207,4 @@ int	server_read_clients(t_server *server)
 		i++;
 	}
 	return (1);
-}
-
-char	*server_strjoin(char *s1, char *s2)
-{
-	char	*dest;
-	size_t	len;
-
-	if (!s1)
-		return (server_strdup(s2));
-	len = (strlen(s1) + strlen(s2) + 1);
-	dest = malloc(len * sizeof(char));
-	if (dest == NULL)
-		return (NULL);
-	strcpy(dest, s1);
-	strcat(dest, s2);
-	free(s1);
-	return ((char *)dest);
-}
-
-char	*server_strdup(const char *s)
-{
-	int		i;
-	char	*dup;
-
-	i = 0;
-	dup = malloc((strlen(s) + 1) * sizeof(char));
-	if (dup == NULL)
-		return (NULL);
-	while (s[i] != '\0')
-	{
-		dup[i] = s[i];
-		i++;
-	}
-	dup[i] = '\0';
-	return (dup);
 }

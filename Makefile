@@ -6,7 +6,8 @@ INCLUDES = -I includes
 NAME = server
 
 SRCS =	src/main.c\
-		src/server.c
+		src/server.c\
+		src/server_utils.c
 
 OBJDIR = obj
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)
