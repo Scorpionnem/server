@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:56 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/16 17:18:28 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/17 11:30:14 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ class	Server
 		/*
 			Sends a message to all clients except the client given in parameters
 		*/
-		void	sendAll(Client &client, const std::string &msg)
+		void	sendAll(const Client &client, const std::string &msg) const
 		{
 			for (auto pair : _clients)
 			{

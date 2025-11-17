@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:16 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/16 17:18:37 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/17 11:31:11 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,14 +37,15 @@ int	main(void)
 		{
 			std::cout << "Disconnect callback for client: " << client.id() << std::endl;
 		});
-	server.setMessageCallback([]
+	server.setMessageCallback([&server]
 		(const Client &client, const std::string &msg)
 		{
+			server.sendAll(client, msg);
 			std::cout << "Message callback for client: " << client.id() << " : " << msg << std::flush;
 		});
 
 	try {
-		server.open(4242);
+		server.open(6942);
 		while (g_sig == 0)
 			server.update();
 		server.close();
