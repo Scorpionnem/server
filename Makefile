@@ -19,7 +19,7 @@ re: fclean all
 
 $(NAME): $(OBJS)
 	@echo Compiling $(NAME)
-	@$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^
+	@$(CC) $(CFLAGS) $(INCLUDES) -o $@ $^ -lssl -lcrypto
 
 $(OBJDIR)/%.o: %.c
 	@mkdir -p $(dir $@)

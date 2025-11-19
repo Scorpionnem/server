@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 18:15:07 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/19 14:43:04 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/19 15:10:41 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@
 # include <string.h>
 # include <errno.h>
 # include <stdio.h>
+# include <stdbool.h>
 
 # define MAX_CLIENTS 2
 #  if MAX_CLIENTS <= 0
@@ -30,8 +31,10 @@
 
 typedef struct s_client
 {
-	int	fd;
-	int	id;
+	int		fd;
+	int		id;
+
+	bool	logged;
 }	t_client;
 
 typedef struct s_server
