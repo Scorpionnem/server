@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 18:15:07 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/17 12:52:37 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/19 14:43:04 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,8 @@ typedef struct s_server
 	struct 	pollfd		fds[MAX_CLIENTS + 1];
 
 	unsigned int		current_client_id;
-	t_client			clients[MAX_CLIENTS + 1];
+	t_client			*clients;
+	int					clients_count;
 
 	void (*connect_hook)(t_client *, void *);
 	void	*connect_hook_arg;
@@ -61,5 +62,7 @@ void	server_set_message_hook(t_server *server, void (*func)(t_client *client, ch
 
 int	server_send_to_fd(int fd, const char *msg);
 int	server_send_to_id(t_server *server, int id, const char *msg);
+
+void	*server_realloc(void *ptr, ssize_t ptr_size, ssize_t add_size);
 
 #endif

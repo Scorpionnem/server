@@ -6,11 +6,32 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 12:26:03 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/17 12:26:20 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/19 14:38:09 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "server_internals.h"
+
+void	*server_realloc(void *ptr, ssize_t ptr_size, ssize_t add_size)
+{
+	void	*new;
+	int		min;
+
+	if (ptr_size < 0 || ptr_size + add_size < 0)
+		return (0);
+	new = calloc(ptr_size + add_size, 1);
+	if (!new)
+		return (0);
+	if (ptr_size != 0)
+	{
+		min = ptr_size;
+		if (add_size < 0)
+			min = ptr_size + add_size;
+		memcpy(new, ptr, min);
+	}
+	free(ptr);
+	return (new);
+}
 
 char	*server_strjoin(char *s1, char *s2)
 {

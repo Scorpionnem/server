@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/17 11:20:35 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/17 17:50:06 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/19 15:05:02 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,16 +51,18 @@ int	server_open(t_server *server, int port)
 		close(server->socket_fd);
 		return (0);
 	}
+	server->clients = calloc(0, sizeof(t_client));
 	return (1);
 }
 
 int	server_close(t_server *server)
 {
-	for (int i = 0; i < MAX_CLIENTS; i++)
+	for (int i = 0; i < server->clients_count; i++)
 		if (server->clients[i].fd != 0)
 			close(server->clients[i].fd);
 	if (server->socket_fd != 0)
 		close(server->socket_fd);
+	free(server->clients);
 	return (1);
 }
 
@@ -90,7 +92,7 @@ int	server_send_to_fd(int fd, const char *msg)
 
 int	server_send_to_id(t_server *server, int id, const char *msg)
 {
-	for (int c = 0; c < MAX_CLIENTS; c++)
+	for (int c = 0; c < server->clients_count; c++)
 		if (server->clients[c].id == id)
 		{
 			send(server->clients[c].fd, msg, strlen(msg), 0);
@@ -101,31 +103,31 @@ int	server_send_to_id(t_server *server, int id, const char *msg)
 
 int	server_remove_client(t_server *server, int fd)
 {
-	for (int i = 0; i < MAX_CLIENTS; i++)
+	t_client	*tmp = calloc(server->clients_count - 1, sizeof(t_client));
+
+	int	i = 0;
+	for (int c = 0; c < server->clients_count; c++)
 	{
-		if (server->clients[i].fd == fd)
+		if (server->clients[c].fd != fd)
 		{
-			server->clients[i].fd = 0;
-			server->clients[i].id = 0;
-			return (1);
+			tmp[i].fd = server->clients[c].fd;
+			tmp[i].id = server->clients[c].id;
+			i++;
 		}
 	}
-	return (0);
+	free(server->clients);
+	server->clients = tmp;
+	server->clients_count--;
+	return (1);
 }
 
 int	server_add_client(t_server *server, int fd)
 {
-	for (int i = 0; i < MAX_CLIENTS; i++)
-	{
-		if (server->clients[i].fd == 0)
-		{
-			server->clients[i].fd = fd;
-			if (fd != 0)
-				server->clients[i].id = server->current_client_id++;
-			return (i);
-		}
-	}
-	return (-1);
+	server->clients = server_realloc(server->clients, server->clients_count * sizeof(t_client), sizeof(t_client));
+	server->clients[server->clients_count].fd = fd;
+	server->clients[server->clients_count].id = server->current_client_id++;
+	server->clients_count++;
+	return (server->clients_count - 1);
 }
 
 int	server_refresh_poll(t_server *server)
@@ -134,7 +136,7 @@ int	server_refresh_poll(t_server *server)
 	server->fds[0].events = POLLIN;
 	server->fds[0].revents = 0;
 	int	i = 1;
-	for (int c = 0; c < MAX_CLIENTS; c++)
+	for (int c = 0; c < server->clients_count; c++)
 	{
 		server->fds[i].fd = server->clients[c].fd;
 		server->fds[i].events = POLLIN;
@@ -150,18 +152,11 @@ int	server_new_client(t_server *server)
 	unsigned int			len = sizeof(struct sockaddr_in);
 	char					ip[INET_ADDRSTRLEN];
 	int						fd;
-	
+
 	memset(&addr, 0, len);
 	fd = accept(server->socket_fd, (struct sockaddr*)&addr, &len);
 	if (fd == -1)
 		return (0);
-
-	if (server_add_client(server, 0) == -1)
-	{
-		printf("Too many clients\n");
-		close(fd);
-		return (1);
-	}
 
 	inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
 	int client = server_add_client(server, fd);
@@ -174,7 +169,7 @@ int	server_new_client(t_server *server)
 int	server_read_clients(t_server *server)
 {
 	int	i = 1;
-	for (int c = 0; c < MAX_CLIENTS;)
+	for (int c = 0; c < server->clients_count;)
 	{
 		if (server->fds[i].revents & POLLIN)
 		{
