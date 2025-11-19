@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 18:15:16 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/19 15:47:25 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/19 15:53:51 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,14 +71,14 @@ int	check_client_password(t_server *server, t_client *client, char *msg)
 	if (!client->logged)
 	{
 		char *hashed_msg = sha256(msg);
-		if (!strcmp(hashed_msg, PASSWORD))
+		int	cmp = strcmp(hashed_msg, PASSWORD);
+		free(hashed_msg);
+		if (!cmp)
 		{
-			free(hashed_msg);
 			server_send_to_id(server, client->id, CORRECT_PASSWORD_TEXT);
 			client->logged = true;
 			return (1);
 		}
-		free(hashed_msg);
 		server_send_to_id(server, client->id, INCORRECT_PASSWORD_TEXT);
 		return (0);
 	}
