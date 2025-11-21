@@ -7,7 +7,9 @@ NAME = server
 
 SRCS =	src/main.c\
 		src/server.c\
-		src/server_utils.c
+		src/server_utils.c\
+		src/list.c\
+		src/list_node.c
 
 OBJDIR = obj
 OBJS = $(SRCS:%.c=$(OBJDIR)/%.o)

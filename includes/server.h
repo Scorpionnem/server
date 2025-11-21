@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 18:15:07 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/19 15:10:41 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/21 10:33:43 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,10 +24,12 @@
 # include <stdio.h>
 # include <stdbool.h>
 
-# define MAX_CLIENTS 2
+# define MAX_CLIENTS 3
 #  if MAX_CLIENTS <= 0
 #   error "MAX_CLIENTS should be > 0"
 #  endif
+
+# include "list.h"
 
 typedef struct s_client
 {
@@ -41,11 +43,10 @@ typedef struct s_server
 {
 	int					socket_fd;
 	struct sockaddr_in	server_address;
-	struct 	pollfd		fds[MAX_CLIENTS + 1];
+	struct 	pollfd		fds[MAX_CLIENTS + 2];
 
 	unsigned int		current_client_id;
-	t_client			*clients;
-	int					clients_count;
+	t_list				clients;
 
 	void (*connect_hook)(t_client *, void *);
 	void	*connect_hook_arg;
