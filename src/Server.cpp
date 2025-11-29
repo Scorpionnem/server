@@ -6,13 +6,13 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:22 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/16 17:09:34 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/29 12:59:32 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
-void	Server::_processInput(Client &client, const std::string &msg)
+void	Server::_processInput(Server::Client &client, const std::string &msg)
 {
 	if (_onMessage)
 		_onMessage(client, msg);
@@ -40,7 +40,7 @@ void Server::_recvClients()
 
 	for (auto it = _clients.begin(); it != _clients.end();)
 	{
-		Client	&client = it->second;
+		Server::Client	&client = it->second;
 
 		if (_fds[i].revents & POLLIN)
 		{
@@ -91,7 +91,7 @@ void	Server::_addNewClient()
 
 	inet_ntop(AF_INET, &addr, ip, INET_ADDRSTRLEN);
 
-	Client	client(_curClientID++, clientFD);
+	Server::Client	client(clientFD);
 	_clients.insert({clientFD, client});
 
 	if (_onConnect)
@@ -106,7 +106,7 @@ void	Server::_refreshPoll()
 	int	i = 1;
 	for (auto pair : _clients)
 	{
-		Client	&client = pair.second;
+		Server::Client	&client = pair.second;
 		_fds[i].fd = client.fd();
 		_fds[i].events = POLLIN;
 		_fds[i].revents = 0;

@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:56 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/17 11:30:14 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/11/29 12:55:56 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,26 @@
 # include <functional>
 # include <stdexcept>
 # include <cstring>
-
-# include "Client.hpp"
+# include <iostream>
 
 class	Server
 {
 	public:
 		static constexpr int	MAX_CLIENTS = 16;
+
+		class	Client
+		{
+			public:
+				Client(uint fd)
+				{
+					_fd = fd;
+				}
+				~Client() {}
+			
+				uint	fd() const {return (_fd);}
+			private:
+				uint		_fd;
+		};
 	public:
 		Server() {}
 		~Server() {}
@@ -38,40 +51,55 @@ class	Server
 		void	close();
 		void	update();
 
-		void	setConnectCallback(std::function<void(const Client &)> func) {_onConnect = func;}
-		void	setDisconnectCallback(std::function<void(const Client &)> func) {_onDisconnect = func;}
-		void	setMessageCallback(std::function<void(const Client &, const std::string &)> func) {_onMessage = func;}
+		void	setConnectCallback(std::function<void(const Server::Client &)> func) {_onConnect = func;}
+		void	setDisconnectCallback(std::function<void(const Server::Client &)> func) {_onDisconnect = func;}
+		void	setMessageCallback(std::function<void(const Server::Client &, const std::string &)> func) {_onMessage = func;}
+
 		/*
 			Sends a message to all clients except the client given in parameters
+
+			@throws runtime_error if send fails
 		*/
-		void	sendAll(const Client &client, const std::string &msg) const
+		void	sendAll(const Server::Client &client, const std::string &msg) const
 		{
 			for (auto pair : _clients)
 			{
 				if (client.fd() != pair.second.fd())
-					send(pair.second.fd(), msg.c_str(), msg.size(), 0);
+					if (send(pair.second.fd(), msg.c_str(), msg.size(), 0) == -1)
+						throw std::runtime_error("Failed to send message to fd " + std::to_string(pair.second.fd()));
 			}
 		}
-		void	sendAll(const std::string &msg)
+		/*
+			@throws runtime_error if send fails
+		*/
+		void	sendAll(const std::string &msg) const
 		{
 			for (auto pair : _clients)
-				send(pair.second.fd(), msg.c_str(), msg.size(), 0);
+				if (send(pair.second.fd(), msg.c_str(), msg.size(), 0) == -1)
+					throw std::runtime_error("Failed to send message to fd " + std::to_string(pair.second.fd()));
+		}
+		/*
+			@throws runtime_error if send fails
+		*/
+		void	sendClient(const Server::Client &client, const std::string &msg) const
+		{
+			if (send(client.fd(), msg.c_str(), msg.size(), 0) == -1)
+				throw std::runtime_error("Failed to send message to fd " + std::to_string(client.fd()));
 		}
 	private:
-		void	_processInput(Client &client, const std::string &msg);
+		void	_processInput(Server::Client &client, const std::string &msg);
 		void	_refreshPoll();
 		void 	_recvClients();
 		void	_addNewClient();
-		uint					_curClientID = 0;
-		std::map<int, Client>	_clients;
+		std::map<int, Server::Client>	_clients;
 
 		int						_socketFD = -1;
 		sockaddr_in				_serverAddress;
 		struct 	pollfd			_fds[Server::MAX_CLIENTS + 1];
 
-		std::function<void(const Client &)>						_onConnect = NULL;
-		std::function<void(const Client &)>						_onDisconnect = NULL;
-		std::function<void(const Client &, const std::string &)>	_onMessage = NULL;
+		std::function<void(const Server::Client &)>							_onConnect = NULL;
+		std::function<void(const Server::Client &)>							_onDisconnect = NULL;
+		std::function<void(const Server::Client &, const std::string &)>	_onMessage = NULL;
 };
 
 #endif
