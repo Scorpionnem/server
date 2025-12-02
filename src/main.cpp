@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:16 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/29 12:51:35 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/12/03 00:14:21 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ int	main(void)
 		(const Server::Client &client, const std::string &msg)
 		{
 			server.sendAll(client, msg);
-			std::cout << "Message callback for client: " << client.fd() << " : " << msg << std::flush;
+			std::cout << "Message callback for client: " << client.fd() << " : " << msg << std::endl;
 		});
 
 	try {

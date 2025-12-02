@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:56 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/29 12:55:56 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/12/03 00:12:30 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,10 @@ class	Server
 				~Client() {}
 			
 				uint	fd() const {return (_fd);}
+				std::string	getBuffer() {return (_buffer);}
+				void	setBuffer(const std::string buf) {_buffer = buf;}
 			private:
+				std::string	_buffer;
 				uint		_fd;
 		};
 	public:
@@ -87,10 +90,10 @@ class	Server
 				throw std::runtime_error("Failed to send message to fd " + std::to_string(client.fd()));
 		}
 	private:
-		void	_processInput(Server::Client &client, const std::string &msg);
-		void	_refreshPoll();
-		void 	_recvClients();
-		void	_addNewClient();
+		void		_processInput(Server::Client &client, const std::string &msg);
+		void		_refreshPoll();
+		void 		_recvClients();
+		void		_addNewClient();
 		std::map<int, Server::Client>	_clients;
 
 		int						_socketFD = -1;

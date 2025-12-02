@@ -6,7 +6,7 @@
 /*   By: mbatty <mbatty@student.42angouleme.fr>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/16 14:41:22 by mbatty            #+#    #+#             */
-/*   Updated: 2025/11/29 12:59:32 by mbatty           ###   ########.fr       */
+/*   Updated: 2025/12/03 00:15:21 by mbatty           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ void Server::_recvClients()
 
 		if (_fds[i].revents & POLLIN)
 		{
-			std::string msg;
+			std::string msg = client.getBuffer();
 			char buffer[1024];
 			ssize_t size;
 
@@ -59,10 +59,17 @@ void Server::_recvClients()
 					goto skip_it;
 				}
 				msg.append(buffer, size);
-				if (size < (ssize_t)sizeof(buffer))
+				if (msg.find('\n') != msg.npos)
 					break ;
 			}
-			_processInput(client, msg);
+			while (true)
+			{
+				if (msg.find('\n') == msg.npos)
+					break ;
+				_processInput(client, msg.substr(0, msg.find('\n')));
+				msg = msg.substr(msg.find('\n') + 1);
+			}
+			client.setBuffer(msg);
 		}
 
 		++it;
